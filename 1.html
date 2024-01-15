@@ -40,9 +40,9 @@
   </head>
     <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
     <div class="display-1 t" style="height: 100px; text-align: center; font-size: 30px; font-weight: bold;color:aliceblue">
-      <span class="title">平均</span>
-      <span class="title">预期</span>
-      <span class="title">寿命</span>
+      <span class="title">就业</span>
+      <span class="title">基本</span>
+      <span class="title">情况</span>
     </div>
     <div id="main" style="width: 1000px;height:600px;"></div>
     <script type="text/javascript">
@@ -63,30 +63,11 @@ var option;
 
 const updateFrequency = 2000;
 const dimension = 0;
-const countryColors = {
-  男: '#b2bb1a',
-  女: '#c69674',
-  合计: '#f93',
-  Cuba: '#002a8f',
-  Finland: '#003580',
-  France: '#ed2939',
-  Germany: '#000',
-  Iceland: '#003897',
-  India: '#f93',
-  Japan: '#bc002d',
-  'North Korea': '#024fa2',
-  'South Korea': '#000',
-  'New Zealand': '#00247d',
-  Norway: '#ef2b2d',
-  Poland: '#dc143c',
-  Russia: '#d52b1e',
-  Turkey: '#e30a17',
-  'United Kingdom': '#00247d',
-  'United States': '#b22234'
-};
+const colorArray = ['#b2bb1a', '#c69674', '#f93', '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
+
 $.when(
   $.getJSON('data.json'),
-  $.getJSON('data2.json')
+  $.getJSON('data3.json')
 ).done(function (res0, res1) {
   const flags = res0[0];
   const data = res1[0];
@@ -121,7 +102,7 @@ const names = Array.from(namesSet);
     grid: {
       top: 10,
       bottom: 30,
-      left: 150,
+      left: 250,
       right: 80
     },
     xAxis: {
@@ -143,11 +124,11 @@ const names = Array.from(namesSet);
     yAxis: {
       type: 'category',
       inverse: true,
-      max: 3,
+      max: 12,
       axisLabel: {
         show: true,
-        fontSize: 30,
-        margin:50,
+        fontSize: 20,
+        margin:10,
         color:"#ffffff"
       },
       animationDuration: 300,
@@ -160,7 +141,7 @@ const names = Array.from(namesSet);
         type: 'bar',
         itemStyle: {
           color: function (param) {
-            return countryColors[param.value[3]] || '#5470c6';
+            return colorArray[param.dataIndex % colorArray.length] || '#5470c6';
           }
         },
         encode: {
