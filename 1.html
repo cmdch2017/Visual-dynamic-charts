@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ECharts</title>
+    <!-- 引入刚刚下载的 ECharts 文件 -->
+    <script src="echarts.js"></script>
+    <script src="jquery-1.10.2.min.js"></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh; /* 让 body 铺满整个视口高度 */
+        margin: 0; /* 去除默认的 body 边距 */
+        background-size: cover;
+        background: url('1.jpg') center center fixed; /* 替换 'your-background-image.jpg' 为实际的背景图片路径 */
+        position: relative;
+      }
+      .t,.p {
+        display:flex;
+        overflow: hidden;
+    }
+
+    .title,.para {
+        margin-bottom: 10px;
+        display:inline-block;
+        animation-name:hc;
+        animation-duration: .5s;
+        transition: all 600ms cubic-bezier(0.785, 0.135, 0.15, 0.86);
+        animation-fill-mode: both;
+    }
+
+    @keyframes hc{
+        from {transform: translateY(30%);opacity: 0;}
+        to {transform: translateY(0%);opacity: 1;}
+    }
+    </style>
+  </head>
+    <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+    <div class="display-1 t" style="height: 100px; text-align: center; font-size: 30px; font-weight: bold;color:aliceblue">
+      <span class="title">平均</span>
+      <span class="title">预期</span>
+      <span class="title">寿命</span>
+    </div>
+    <div id="main" style="width: 1000px;height:600px;"></div>
+    <script type="text/javascript">
+var title=document.getElementsByClassName('title');
+var para=document.getElementsByClassName('para');
+
+for(i0=0;i0<title.length;i0++) {
+    title[i0].style.animationDelay = (i0*0.1)+"s";
+}
+
+for(i1=0;i1<para.length;i1++) {
+    para[i1].style.animationDelay = (i1*0.1)+"s";
+}
+
+var chartDom = document.getElementById('main');
+var myChart = echarts.init(chartDom);
+var option;
+
+const updateFrequency = 2000;
+const dimension = 0;
+const countryColors = {
+  男: '#b2bb1a',
+  女: '#c69674',
+  合计: '#f93',
+  Cuba: '#002a8f',
+  Finland: '#003580',
+  France: '#ed2939',
+  Germany: '#000',
+  Iceland: '#003897',
+  India: '#f93',
+  Japan: '#bc002d',
+  'North Korea': '#024fa2',
+  'South Korea': '#000',
+  'New Zealand': '#00247d',
+  Norway: '#ef2b2d',
+  Poland: '#dc143c',
+  Russia: '#d52b1e',
+  Turkey: '#e30a17',
+  'United Kingdom': '#00247d',
+  'United States': '#b22234'
+};
+$.when(
+  $.getJSON('data.json'),
+  $.getJSON('data2.json')
+).done(function (res0, res1) {
+  const flags = res0[0];
+  const data = res1[0];
+  const years = [];
+  for (let i = 0; i < data.length; ++i) {
+    if (years.length === 0 || years[years.length - 1] !== data[i][4]) {
+      years.push(data[i][4]);
+    }
+  }
+  const namesSet = new Set();
+
+for (let i = 0; i < data.length; ++i) {
+  namesSet.add(data[i][3]);
+}
+
+const names = Array.from(namesSet);
+
+  
+  function getFlag(countryName) {
+    if (!countryName) {
+      return '';
+    }
+    return (
+      flags.find(function (item) {
+        return item.name === countryName;
+      }) || {}
+    ).emoji;
+  }
+  let startIndex = 1;
+  let startYear = years[startIndex];
+  option = {
+    grid: {
+      top: 10,
+      bottom: 30,
+      left: 150,
+      right: 80
+    },
+    xAxis: {
+      max: 'dataMax',
+      scale: true,
+      axisLabel: {
+        formatter: function (n) {
+          return Math.round(n) + '';
+        },
+        fontSize: 20,
+        color:"#ffffff"
+      },
+        },
+    dataset: {
+      source: data.slice(1).filter(function (d) {
+        return d[4] === startYear;
+      })
+    },
+    yAxis: {
+      type: 'category',
+      inverse: true,
+      max: 3,
+      axisLabel: {
+        show: true,
+        fontSize: 30,
+        margin:50,
+        color:"#ffffff"
+      },
+      animationDuration: 300,
+      animationDurationUpdate: 300
+    },
+    series: [
+      {
+        realtimeSort: true,
+        seriesLayoutBy: 'column',
+        type: 'bar',
+        itemStyle: {
+          color: function (param) {
+            return countryColors[param.value[3]] || '#5470c6';
+          }
+        },
+        encode: {
+          x: dimension,
+          y: 3
+        },
+        label: {
+          show: true,
+          precision: 1,
+          position: 'right',
+          fontSize:20,
+          color:"#ffffff",
+          valueAnimation: true,
+          fontFamily: 'monospace'
+        }
+      }
+    ],
+    // Disable init animation.
+    animationDuration: 0,
+    animationDurationUpdate: updateFrequency,
+    animationEasing: 'linear',
+    animationEasingUpdate: 'linear',
+    graphic: {
+      elements: [
+        {
+          type: 'text',
+          right: 150,
+          bottom: 60,
+          style: {
+            text: startYear,
+            font: 'bolder 80px monospace',
+            fill: 'rgba(255, 255, 255, 0.3)'
+          },
+          z: 100
+        }
+      ]
+    }
+  };
+  console.log(option);
+  myChart.setOption(option);
+  for (let i = startIndex; i < years.length - 1; ++i) {
+    (function (i) {
+      setTimeout(function () {
+        updateYear(years[i + 1]);
+      }, (i - startIndex) * updateFrequency);
+    })(i);
+  }
+  function updateYear(year) {
+    let source = data.slice(1).filter(function (d) {
+      return d[4] === year;
+    });
+    option.series[0].data = source;
+    option.graphic.elements[0].style.text = year;
+    myChart.setOption(option);
+  }
+});
+
+option && myChart.setOption(option);
+
+    </script>
+  </body>
+</html>
